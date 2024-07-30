@@ -1,4 +1,5 @@
 return {
+    startBlackout = true, -- Start server as blackout event
     timeScale = 4000, -- How many milliseconds per minute in GTA time (2000ms is normal for a 48 minute day)
 
     useNightScale = false, -- If true, the server will use timeScaleNight to alter the time during night

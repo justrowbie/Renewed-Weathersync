@@ -168,3 +168,11 @@ if not useRealTime then
         globalState.freezeTime = newFreeze
     end)
 end
+
+-- nothing: add blackout command
+lib.addCommand('blackout', {
+    help = 'Say bye bye to power',
+    restricted = 'group.admin',
+}, function(source)
+    globalState.blackOut = not globalState.blackOut
+end)

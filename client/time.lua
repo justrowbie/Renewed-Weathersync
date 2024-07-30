@@ -1,3 +1,4 @@
+local config = require 'config.time'
 local timeScale = GlobalState.timeScale
 local currentTime = GlobalState.currentTime
 local timeFrozen = GlobalState.freezeTime
@@ -41,8 +42,20 @@ AddStateBagChangeHandler('syncWeather', ('player:%s'):format(cache.serverId), fu
         if not timeFrozen then
             NetworkOverrideClockMillisecondsPerGameMinute(timeScale)
         end
+        
+        --nothing: force blackout
+        if config.startBlackout then
+            SetArtificialLightsState(true)
+            SetArtificialLightsStateAffectsVehicles(false)
+        end
     else
         NetworkOverrideClockMillisecondsPerGameMinute(99999999)
-        NetworkOverrideClockTime(21, 0, 0)
+        NetworkOverrideClockTime(18, 0, 0)
+        
+        --nothing: force blackout
+        if config.startBlackout then
+            SetArtificialLightsState(true)
+            SetArtificialLightsStateAffectsVehicles(false)
+        end
     end
 end)
