@@ -17,4 +17,3 @@ return {
         minute = 0
     }
 }
-

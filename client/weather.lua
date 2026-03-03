@@ -1,3 +1,4 @@
+local config = require 'config.weather'
 local serverWeather = GlobalState.weather
 local hadSnow = false
 local playerState = LocalPlayer.state
@@ -9,7 +10,9 @@ local function resetWeatherParticles()
         ReleaseNamedScriptAudioBank('ICE_FOOTSTEPS')
         ReleaseNamedScriptAudioBank('SNOW_FOOTSTEPS')
         ForceSnowPass(false)
-        WaterOverrideSetStrength(0.5)
+        if config.calmWater then
+            WaterOverrideSetStrength(0.5)
+        end
         RemoveNamedPtfxAsset('core_snow')
 
         if IsIplActive('alamo_ice') then
@@ -30,7 +33,9 @@ local function setWeatherParticles()
         SetForcePedFootstepsTracks(true)
         RequestScriptAudioBank('ICE_FOOTSTEPS', false)
         RequestScriptAudioBank('SNOW_FOOTSTEPS', false)
-        WaterOverrideSetStrength(0.9)
+        if config.calmWater then
+        	WaterOverrideSetStrength(0.9)
+        end
 
         if GetResourceState('nve_iced_alamo') ~= 'missing' then
             RequestIpl('alamo_ice')
@@ -88,13 +93,22 @@ CreateThread(function ()
     while not NetworkIsSessionStarted() do -- Possible fix for slow clients
         Wait(100)
     end
-
     SetWind(0.1)
-    WaterOverrideSetStrength(0.5)
+    if config.calmWater then
+        WaterOverrideSetStrength(0.5)
+    end
 
     setWeather(true)
 
     playerState.syncWeather = true
+    playerState.playerWeather = 'EXTRASUNNY'
+
+    -- set blackout to the same state as server has
+    if type(GlobalState.blackout) == 'boolean' then
+        SetArtificialLightsState(GlobalState.blackout)
+    end
+
+    SetArtificialLightsStateAffectsVehicles(false)
 end)
 
 AddStateBagChangeHandler('syncWeather', ('player:%s'):format(cache.serverId), function(_, _, value)
@@ -102,10 +116,11 @@ AddStateBagChangeHandler('syncWeather', ('player:%s'):format(cache.serverId), fu
         SetTimeout(0, function()
             resetWeatherParticles()
             while not playerState.syncWeather do
+                local setWeather = playerState.playerWeather or 'EXTRASUNNY'
                 SetRainLevel(0.0)
-                SetWeatherTypePersist('EXTRASUNNY')
-                SetWeatherTypeNow('EXTRASUNNY')
-                SetWeatherTypeNowPersist('EXTRASUNNY')
+                SetWeatherTypePersist(setWeather)
+                SetWeatherTypeNow(setWeather)
+                SetWeatherTypeNowPersist(setWeather)
                 Wait(2500)
             end
         end)
